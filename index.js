@@ -1,70 +1,54 @@
 import { IgApiClient } from "instagram-private-api";
-import fs from "fs";
+import {
+  existsSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+  mkdirSync,
+} from "fs";
+import { fileURLToPath } from "url";
 import chalk from "chalk";
 import lodash from "lodash";
 import cron from "node-cron";
-import * as dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 const ig = new IgApiClient();
-ig.state.generateDevice(process.env.IG_USERNAME);
 
-(async () => {
-  await ig.simulate.preLoginFlow();
-  ig.account
-    .login(process.env.IG_USERNAME, process.env.IG_PASSWORD)
-    .then(() => {
-      cron.schedule("* * * * *", () => {
-        fetchReel().then((res) => {
-          res.items.forEach((e) => {
-            ig.story
-              .seen(e)
-              .then(() => {
-                res.userNames.forEach((e) =>
-                  console.log(
-                    chalk.blue(
-                      "\x1b[32m%s\x1b[0m",
-                      "USER =====>",
-                      e.username,
-                      "MEDIA_ID =====> ",
-                      e.media_id
-                    )
-                  )
-                );
-              })
-              .catch((err) => {
-                console.log(err);
-              });
-          });
-        });
-      });
-    })
-    .catch((err) => {
-      console.log(chalk.red(err.message));
-      process.exit(1);
-    });
-})();
+const username = process.env.IG_USERNAME;
+const password = process.env.IG_PASSWORD;
 
-const fetchReel = async () => {
-  const idArray = [];
-  const userNames = [];
-  const data = await ig.feed.reelsTray("pull_to_refresh");
+ig.state.generateDevice(username);
 
-  const reel = await data.items();
-  reel.forEach((e) => {
-    e.media_ids.forEach((d) => {
-      userNames.push({ username: e.user.username, media_id: d });
-      idArray.push({
-        id: d + "_" + e.id,
-        taken_at: e.latest_reel_media,
-        user: { pk: e.id },
-      });
-    });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let tokenPath = `${__dirname}/token/${username}.json`;
+let tokenDirectory = `${__dirname}/token`;
+
+if (!existsSync(tokenDirectory)) {
+  mkdirSync(tokenDirectory);
+}
+
+if (!existsSync(tokenPath)) {
+  await ig.account.login(username, password).catch((error) => {
+    console.log(chalk.red(error.message));
+    console.log(chalk.red("Login failed try again !."));
+    process.exit();
   });
-  var writeStream = fs.createWriteStream(`${process.env.IG_USERNAME}.log`);
-  userNames.forEach((username) => {
-    writeStream.write(username.media_id + ",");
-  });
-  var items = lodash.chunk(idArray, 5);
-  return { items, userNames };
-};
+
+  console.log(chalk.green("successfully logged in."));
+
+  console.log(chalk.yellow("Saving token"));
+
+  const serialized = await ig.state.serialize();
+  delete serialized.constants;
+  writeFileSync(tokenPath, JSON.stringify(serialized));
+
+  console.log(chalk.greenBright("Token successfully saved."));
+} else {
+  console.log(chalk.yellowBright("Token exist."));
+
+  let token = readFileSync(tokenPath, { encoding: "utf-8" });
+  await ig.state.deserialize(token);
+  console.log(chalk.green("successfully logged in."));
+}
