@@ -6,11 +6,12 @@ import {
   writeFileSync,
   mkdirSync,
 } from "fs";
+import path from 'path'
 import { fileURLToPath } from "url";
 import chalk from "chalk";
-import lodash from "lodash";
-import cron from "node-cron";
 import "dotenv/config";
+import { webApiCookie } from "./cookie.js";
+import { fetchingUserIds } from "./fetchingUserIds.js";
 
 const ig = new IgApiClient();
 
@@ -44,7 +45,9 @@ if (!existsSync(tokenPath)) {
   delete serialized.constants;
   writeFileSync(tokenPath, JSON.stringify(serialized));
 
-  console.log(chalk.greenBright("Token successfully saved."));
+  fetchingUserIds(ig.state)
+    .then((userIds) => console.log(userIds))
+    .catch((err) => console.log(err));
 } else {
   console.log(chalk.yellowBright("Token exist."));
 
