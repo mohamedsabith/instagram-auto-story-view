@@ -10,8 +10,6 @@ import path from 'path'
 import { fileURLToPath } from "url";
 import chalk from "chalk";
 import "dotenv/config";
-import { webApiCookie } from "./cookie.js";
-import { fetchingUserIds } from "./fetchingUserIds.js";
 
 const ig = new IgApiClient();
 
@@ -45,9 +43,10 @@ if (!existsSync(tokenPath)) {
   delete serialized.constants;
   writeFileSync(tokenPath, JSON.stringify(serialized));
 
-  fetchingUserIds(ig.state)
-    .then((userIds) => console.log(userIds))
-    .catch((err) => console.log(err));
+  ig.media.likers('3005310139531361042').then((res)=>{
+   
+  })
+
 } else {
   console.log(chalk.yellowBright("Token exist."));
 
