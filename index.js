@@ -1,21 +1,10 @@
-import {
-  IgApiClient,
-  IgCheckpointError,
-  IgLoginRequiredError,
-  IgUserHasLoggedOutError,
-} from "instagram-private-api";
-import {
-  existsSync,
-  readFileSync,
-  unlinkSync,
-  writeFileSync,
-  mkdirSync,
-} from "fs";
+import { IgApiClient } from "instagram-private-api";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import chalk from "chalk";
 import "dotenv/config";
-import { fetchingStories } from "./fetchingStories.js";
+import { fetchingLikers } from "./fectchingLikers.js";
 
 const ig = new IgApiClient();
 
@@ -49,37 +38,13 @@ if (!existsSync(tokenPath)) {
   delete serialized.constants;
   writeFileSync(tokenPath, JSON.stringify(serialized));
 
-  ig.media
-    .likers("3005310139531361042")
-    .then((res) => {
-      fetchingStories(res.users, JSON.stringify(serialized))
-        .then((result) => {
-          console.log(result);
-        })
-        .catch((error) => {
-          if (
-            error instanceof IgLoginRequiredError ||
-            error instanceof IgUserHasLoggedOutError ||
-            error instanceof IgCheckpointError
-          ) {
-            unlinkSync(tokenPath);
-            console.log(chalk.red("account relogin required."));
-            process.exit();
-          }
-          console.log(chalk.red(error.message));
-        });
+  fetchingLikers(ig.state)
+    .then((result) => {
+      console.log(result);
     })
     .catch((error) => {
-      if (
-        error instanceof IgLoginRequiredError ||
-        error instanceof IgUserHasLoggedOutError ||
-        error instanceof IgCheckpointError
-      ) {
-        unlinkSync(tokenPath);
-        console.log(chalk.red("account relogin required."));
-        process.exit();
-      }
       console.log(chalk.red(error.message));
+      process.exit();
     });
 } else {
   console.log(chalk.yellowBright("Token exist."));
@@ -92,36 +57,12 @@ if (!existsSync(tokenPath)) {
   delete serialized.constants;
   writeFileSync(tokenPath, JSON.stringify(serialized));
 
-  ig.media
-    .likers("3005310139531361042")
-    .then((res) => {
-      fetchingStories(res.users, JSON.stringify(serialized))
-        .then((result) => {
-          console.log(result);
-        })
-        .catch((error) => {
-          if (
-            error instanceof IgLoginRequiredError ||
-            error instanceof IgUserHasLoggedOutError ||
-            error instanceof IgCheckpointError
-          ) {
-            unlinkSync(tokenPath);
-            console.log(chalk.red("account relogin required."));
-            process.exit();
-          }
-          console.log(chalk.red(error.message));
-        });
+  fetchingLikers(ig.state)
+    .then((result) => {
+      console.log(result);
     })
     .catch((error) => {
-      if (
-        error instanceof IgLoginRequiredError ||
-        error instanceof IgUserHasLoggedOutError ||
-        error instanceof IgCheckpointError
-      ) {
-        unlinkSync(tokenPath);
-        console.log(chalk.red("account relogin required."));
-        process.exit();
-      }
       console.log(chalk.red(error.message));
+      process.exit();
     });
 }
