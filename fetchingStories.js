@@ -37,6 +37,7 @@ export const fetchingStories = (userIds, state) => {
       })
       .then((stories) => {
         console.log(stories);
+        resolve(stories)
       })
       .catch((err) => {
         console.log(err);

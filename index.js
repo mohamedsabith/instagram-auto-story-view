@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import chalk from "chalk";
 import "dotenv/config";
-import { fetchingLikers } from "./fectchingLikers.js";
+import { fetchingLikers } from "./fetchingLikers.js";
 
 const ig = new IgApiClient();
 

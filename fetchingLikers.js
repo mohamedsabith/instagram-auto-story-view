@@ -40,10 +40,12 @@ export const fetchingLikers = (state) => {
               error instanceof IgCheckpointError
             ) {
               unlinkSync(tokenPath);
-              console.log(chalk.red("account relogin required."));
+              console.log(
+                chalk.red("account relogin required.", "Fetching Likers")
+              );
               process.exit();
             }
-            console.log(chalk.red(error.message));
+            console.log(chalk.red(error.message, "Fetching Likers"));
             reject(error);
           });
       })
@@ -54,10 +56,12 @@ export const fetchingLikers = (state) => {
           error instanceof IgCheckpointError
         ) {
           unlinkSync(tokenPath);
-          console.log(chalk.red("account relogin required."));
+          console.log(
+            chalk.red("account relogin required.", "Fetching Likers")
+          );
           process.exit();
         }
-        console.log(chalk.red(error.message));
+        console.log(chalk.red(error.message, "Fetching Likers"));
         reject(error);
       });
   });
