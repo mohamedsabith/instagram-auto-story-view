@@ -1,10 +1,13 @@
 import axios from "axios";
+import { webApiCookie } from "./cookie.js";
 
 export const fetchingStories = (userIds, state) => {
   return new Promise((resolve, reject) => {
+    const cookie = webApiCookie(state);
     let ids;
     ids = userIds.map((user) => `reel_ids=${user.pk}`);
-    ids = ids.toString().replace(/,/g, "&");
+    const array = ids.slice(0, 30);
+    ids = array.toString().replace(/,/g, "&");
 
     const URL = `https://i.instagram.com/api/v1/feed/reels_media/?${ids}`;
 
@@ -27,17 +30,17 @@ export const fetchingStories = (userIds, state) => {
           "x-requested-with": "XMLHttpRequest",
           "User-Agent":
             "Instagram 223.1.0.14.103 Android (31/12; 440dpi; 2048x2048; Xiaomi/Redmi; Redmi Note 9 Pro Max; excalibur; qcom; en_IN; 352895580)",
-          cookie: state,
+          cookie,
         },
-        method: "GET",
-        body: null,
-        mode: "cors",
         referrer: "https://www.instagram.com/",
         referrerPolicy: "strict-origin-when-cross-origin",
+        body: null,
+        method: "GET",
+        mode: "cors",
       })
       .then((stories) => {
-        console.log(stories);
-        resolve(stories)
+        console.log(stories.data, "stories");
+        resolve(stories.data);
       })
       .catch((err) => {
         console.log(err);

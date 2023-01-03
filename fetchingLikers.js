@@ -23,13 +23,10 @@ export const fetchingLikers = (state) => {
   return new Promise(async (resolve, reject) => {
     ig.state = state;
 
-    const serialized = await ig.state.serialize();
-    delete serialized.constants;
-
     ig.media
       .likers("3005310139531361042")
       .then((res) => {
-        fetchingStories(res.users, JSON.stringify(serialized))
+        fetchingStories(res.users, ig.state)
           .then((result) => {
             resolve(result);
           })
