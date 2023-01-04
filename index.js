@@ -4,12 +4,20 @@ import {
   IgLoginRequiredError,
   IgUserHasLoggedOutError,
 } from "instagram-private-api";
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  unlinkSync,
+} from "fs";
+
 import moment from "moment";
 import path from "path";
 import { fileURLToPath } from "url";
 import chalk from "chalk";
 import "dotenv/config";
+import { fetchingLikers } from "./fetchingLikers.js";
 
 const username = process.env.IG_USERNAME;
 const password = process.env.IG_PASSWORD;
@@ -19,6 +27,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let tokenPath = `${__dirname}/token/${username}.json`;
+
 let tokenDirectory = `${__dirname}/token`;
 
 if (!existsSync(tokenDirectory)) {
@@ -104,6 +113,21 @@ if (!existsSync(tokenDirectory)) {
                 `Post liked successfully ===> ${media.user.username} `
               )
             );
+            fetchingLikers(ig.state, media.id)
+              .then((response) => {
+                console.log(response);
+              })
+              .catch((error) => {
+                if (
+                  error instanceof IgLoginRequiredError ||
+                  error instanceof IgUserHasLoggedOutError ||
+                  error instanceof IgCheckpointError
+                ) {
+                  unlinkSync(tokenPath);
+                  console.log(chalk.red("account relogin required."));
+                  process.exit();
+                }
+              });
           }
         }
       }
